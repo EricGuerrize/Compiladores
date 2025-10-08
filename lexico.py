@@ -3,7 +3,7 @@ import re
 #linguagem mini java
 KEYWORDS = {
     "public", "class", "static", "void", "main", "String",
-    "double", "if", "else", "while", "System.out.println", "lerDouble", "System.out.println"
+    "double", "if", "else", "while", "System.out.println", "lerDouble"
 }
 
 # identificacao regex para cada tipo de token
