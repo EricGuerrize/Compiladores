@@ -1,7 +1,7 @@
 from lexico import lexer
 from parser import init_parser
 
-with open("exemplo.mj", "r") as f:
+with open("teste-aritmetica.mj", "r") as f:
     codigo = f.read()
 
 tokens = lexer(codigo)

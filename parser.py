@@ -56,7 +56,7 @@ def lookahead_is(expected_type, expected_value=None):
         return False
     return True
 
-# ======= GRAMÁTICA =======
+# GRAMÁTICA 
 
 def prog():
     match('KW', 'public')
@@ -152,29 +152,83 @@ def assignment_or_cmd():
         codigo_gerado.append(f"ARMZ {symbol_table[var_name]}")
 
 def expr():
-    # EXPRESSAO -> id | NUM | lerDouble() | (expr)
+    codigo = termo()
+    codigo.extend(outros_termos())
+    return codigo
+   
+def outros_termos():
+    codigo = []
+    while lookahead_is('OP', '+') or lookahead_is('OP', '-'):
+        match('OP')
+        op = tokens[pos - 1][1]
+        codigo.extend(termo())
+
+
+        if op == '+':
+            codigo.append("SOMA")
+        else:
+            codigo.append("SUBT")
+    return codigo
+
+def termo():
+    #verificar se o operador é unário - 
+    tem_op_unario = False
+    if lookahead_is('OP', '-'):
+        match('OP', '-')
+        tem_op_unario = True
+    codigo = fator()
+
+    #se possuir operador unario, inveter o sinal.
+
+    if tem_op_unario:
+        codigo.append("INVR")
+
+    codigo.extend(mais_fatores())
+    return codigo
+
+def mais_fatores():
+    codigo = []
+    while lookahead_is('OP', '*') or lookahead_is('OP', '/'):
+        match('OP')
+        operador = tokens[pos - 1][1]
+        codigo_fator = fator()
+        codigo.extend(codigo_fator)
+        
+        if operador == '*':
+            codigo.append("MULT")
+        elif operador == '/':
+            codigo.append("DIVI")
+    
+    return codigo
+    
+def fator():
     if lookahead_is('ID'):
         match('ID')
         var_name = tokens[pos - 1][1]
         if var_name not in symbol_table:
             raise Exception(f"Variável '{var_name}' usada sem declaração.")
         return [f"CRVL {symbol_table[var_name]}"]
+    
     elif lookahead_is('NUM'):
         match('NUM')
         valor = tokens[pos - 1][1]
         return [f"CRCT {valor}"]
+    
     elif lookahead_is('KW', 'lerDouble'):
         match('KW', 'lerDouble')
         match('SYMBOL', '(')
         match('SYMBOL', ')')
         return ["LEIT"]
+    
     elif lookahead_is('SYMBOL', '('):
         match('SYMBOL', '(')
         resultado = expr()
         match('SYMBOL', ')')
         return resultado
+    
     else:
-        raise SyntaxError("Expressão inválida")
+        raise SyntaxError("Expressão inválida: esperado id, número, lerDouble() ou (expressão)")
+
 
 def cmd_if():
     match('KW', 'if')
