@@ -9,5 +9,5 @@ print("Tokens gerados:")
 for t in tokens:
     print(t)
 
-print("\nIniciando análise sintática...")
+print("\nAnálise sintática iniciada : ")
 init_parser(tokens)

@@ -273,6 +273,5 @@ if __name__ == "__main__":
         
     except FileNotFoundError:
         print(f"erro: arquivo '{arquivo}' não encontrado")
-        print("dica: rode o compilador antes: python main.py")
     except Exception as e:
         print(f"erro durante a execução: {e}")

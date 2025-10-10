@@ -30,23 +30,23 @@ def init_parser(toks):
         token = tokens[pos]
         raise SyntaxError(f"Token inesperado apos fim do programa: {token}")
     
-    print("\n" + "="*50)
+    print("\n" + "-"*10)
     print("Tabela de simbolos:")
     for var, addr in symbol_table.items():
         print(f"  {var} -> endereco {addr}")
-    print("="*50)
+    print("-"*10)
     print("Analise sintatica OK")
-    print("\n" + "="*50)
+    print("\n" + "-"*10)
     print("Codigo objeto:")
-    print("="*50)
+    print("-"*50)
     for i, instr in enumerate(codigo_gerado):
         print(f"{i:03d}: {instr}")
-    print("="*50)
+    print("-"*10)
     
     with open("codigo-gerado.txt", "w") as f:
         for instr in codigo_gerado:
             f.write(instr + "\n")
-    print("\nCodigo salvo em 'codigo-gerado.txt'")
+    print("\ncodigo salvo em 'codigo-gerado.txt'")
 
 def match(expected_type, expected_value=None):
     global pos

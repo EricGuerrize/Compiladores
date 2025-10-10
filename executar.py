@@ -7,13 +7,13 @@ import os
 def executar_completo(arquivo_fonte):
     """compila e executa um arquivo mini java"""
     
-    print("="*70)
+    print("-"*10)
     print("COMPILADOR MINI JAVA")
-    print("="*70)
+    print("-"*10)
     
     # parte 1: compilacao
     print("\nPARTE 1: COMPILANDO")
-    print("-"*70)
+    print("-"*10)
     
     try:
         from lexico import lexer
@@ -51,9 +51,9 @@ def executar_completo(arquivo_fonte):
         return False
     
     # parte 2: execucao
-    print("\n" + "="*70)
+    print("-"*15)
     print("PARTE 2: EXECUTANDO")
-    print("="*70 + "\n")
+    print("-"*15)
     
     try:
         from vm import MaquinaVirtual
@@ -75,9 +75,9 @@ def executar_completo(arquivo_fonte):
         traceback.print_exc()
         return False
     
-    print("\n" + "="*70)
+    print("\n" + "="*30)
     print("Finalizado")
-    print("="*70)
+    print("="*30)
     return True
 
 
