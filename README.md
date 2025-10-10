@@ -1,7 +1,14 @@
 compilador mini java
+
 ## desc
 
-compilador para a linguagem minijava, inclui: analisador lexico, sintatico, semantico 
+Projeto desenvolvido para a disciplina **Compiladores 2** (UFMT).  
+Implementa um compilador completo para uma linguagem MiniJava, com:
+- análise léxica
+- análise sintática
+- análise semântica
+- geração de código objeto
+- máquina virtual (MaqHipo)
 
 ## requisistos
 python 3.x
@@ -27,3 +34,5 @@ parser.oy : analisar sintatico
 vm.py : maquina virtual(interpretador)
 executar.py : scprit para executar ambas partes
 exemplo.mj: exemplo de codigo mini java
+
+------------------------
