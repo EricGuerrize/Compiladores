@@ -1,6 +1,5 @@
-"""
-script pra executar compilador e vm em sequencia
-"""
+#script pra executar compilador e vm em sequencia
+
 
 import sys
 import os

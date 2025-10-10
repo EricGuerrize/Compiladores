@@ -1,9 +1,15 @@
-"""
-Maquina Virtual - MaqHipo
-Interpretador para executar codigo objeto gerado pelo compilador
-"""
+# Maquina Virtual (MaqHipo)
+# Interpretador simples para executar o código-objeto do compilador
+
+VERBOSE = False  # mude para True se quiser ver o passo a passo
+
+def dbg(msg):
+    if VERBOSE:
+        print(msg)
 
 class MaquinaVirtual:
+    
+    # estado interno
     def __init__(self):
         # area de codigo - armazena as instrucoes
         self.C = []
@@ -22,8 +28,8 @@ class MaquinaVirtual:
         self.executando = True
     
     def carregar_codigo(self, arquivo):
-        """Lê o arquivo de código objeto e carrega na área C"""
-        print(f"\nCarregando codigo objeto de '{arquivo}'...")
+        # carrega o código-objeto em C e coleta rótulos
+        dbg(f"carregando código de '{arquivo}'...")
         
         with open(arquivo, 'r') as f:
             linhas = f.readlines()
@@ -39,21 +45,21 @@ class MaquinaVirtual:
             if linha.startswith('R') and ':' in linha:
                 rotulo = linha.rstrip(':')
                 self.rotulos[rotulo] = posicao
-                print(f"  Rotulo '{rotulo}' na posicao {posicao}")
+                dbg(f"rótulo '{rotulo}' na posição {posicao}")
             else:
                 self.C.append(linha)
                 posicao += 1
         
-        print(f"{len(self.C)} instrucoes carregadas")
-        print(f"{len(self.rotulos)} rotulos identificados")
+        print(f"{len(self.C)} instruções carregadas")
+        dbg(f"{len(self.rotulos)} rótulos identificados")
     
     def executar(self):
-        """Executa o programa carregado"""
-        print("\nIniciando execucao...\n")
+        # roda as instruções carregadas
+        dbg("iniciando execução...")
         
         while self.executando and self.i < len(self.C):
             instrucao = self.C[self.i]
-            print(f"[{self.i:03d}] {instrucao:20s} | Pilha: {self.D[:self.s+1] if self.s >= 0 else '[]'}")
+            dbg(f"[{self.i:03d}] {instrucao:20s} | pilha: {self.D[:self.s+1] if self.s >= 0 else '[]'}")
             
             self.executar_instrucao(instrucao)
             
@@ -61,11 +67,11 @@ class MaquinaVirtual:
             if self.executando:
                 self.i += 1
         
-        print("\nExecucao finalizada!")
-        print(f"Estado final da pilha: {self.D[:self.s+1] if self.s >= 0 else '[]'}")
+        dbg("execução finalizada")
+        dbg(f"pilha final: {self.D[:self.s+1] if self.s >= 0 else '[]'}")
     
     def executar_instrucao(self, instrucao):
-        """Decodifica e executa uma instrução"""
+        # decodifica e executa uma instrução
         partes = instrucao.split()
         cmd = partes[0]
         
@@ -124,44 +130,44 @@ class MaquinaVirtual:
         else:
             raise Exception(f"Instrução desconhecida: {cmd}")
     
-    # ============= IMPLEMENTAÇÃO DAS INSTRUÇÕES =============
+    #  implementacao das intsr
     
     def instr_INPP(self):
-        """Inicia o programa"""
+        # inicia o programa (zera pilha)
         self.s = -1
         self.D = []
     
     def instr_PARA(self):
-        """Para a execução"""
+        # para a execução
         self.executando = False
     
     def instr_ALME(self, m):
-        """Aloca m posições na pilha"""
+        # aloca m posições na pilha
         for _ in range(m):
             self.s += 1
             self.D.append(0.0)
     
     def instr_CRVL(self, n):
-        """Carrega valor do endereço n no topo da pilha"""
+        # carrega valor do endereço n
         self.s += 1
         if self.s >= len(self.D):
             self.D.append(0.0)
         self.D[self.s] = self.D[n]
     
     def instr_CRCT(self, k):
-        """Carrega constante k no topo da pilha"""
+        # carrega constante k
         self.s += 1
         if self.s >= len(self.D):
             self.D.append(0.0)
         self.D[self.s] = k
     
     def instr_ARMZ(self, n):
-        """Armazena topo da pilha no endereço n"""
+        # armazena topo no endereço n
         self.D[n] = self.D[self.s]
         self.s -= 1
     
     def instr_LEIT(self):
-        """Lê valor da entrada"""
+        # lê um valor do usuário
         valor = float(input("Digite um valor: "))
         self.s += 1
         if self.s >= len(self.D):
@@ -169,82 +175,82 @@ class MaquinaVirtual:
         self.D[self.s] = valor
     
     def instr_IMPR(self):
-        """Imprime valor do topo da pilha"""
-        print(f"Saida: {self.D[self.s]}")
+        # imprime o topo
+        print(self.D[self.s])
         self.s -= 1
     
     def instr_SOMA(self):
-        """Soma os dois valores do topo"""
+        # soma D[s-1] + D[s]
         resultado = self.D[self.s-1] + self.D[self.s]
         self.s -= 1
         self.D[self.s] = resultado
     
     def instr_SUBT(self):
-        """Subtrai os dois valores do topo"""
+        # subtrai D[s-1] - D[s]
         resultado = self.D[self.s-1] - self.D[self.s]
         self.s -= 1
         self.D[self.s] = resultado
     
     def instr_MULT(self):
-        """Multiplica os dois valores do topo"""
+        # multiplica D[s-1] * D[s]
         resultado = self.D[self.s-1] * self.D[self.s]
         self.s -= 1
         self.D[self.s] = resultado
     
     def instr_DIVI(self):
-        """Divide os dois valores do topo"""
+        # divide D[s-1] / D[s]
         resultado = self.D[self.s-1] / self.D[self.s]
         self.s -= 1
         self.D[self.s] = resultado
     
     def instr_CPMA(self):
-        """Compara se s-1 > s"""
+        # compara D[s-1] > D[s]
         resultado = 1.0 if self.D[self.s-1] > self.D[self.s] else 0.0
         self.s -= 1
         self.D[self.s] = resultado
     
     def instr_CPME(self):
-        """Compara se s-1 < s"""
+        # compara D[s-1] < D[s]
         resultado = 1.0 if self.D[self.s-1] < self.D[self.s] else 0.0
         self.s -= 1
         self.D[self.s] = resultado
     
     def instr_CPIG(self):
-        """Compara se s-1 == s"""
+        # compara D[s-1] == D[s]
         resultado = 1.0 if self.D[self.s-1] == self.D[self.s] else 0.0
         self.s -= 1
         self.D[self.s] = resultado
     
     def instr_CDES(self):
-        """Compara se s-1 != s"""
+        # compara D[s-1] != D[s]
         resultado = 1.0 if self.D[self.s-1] != self.D[self.s] else 0.0
         self.s -= 1
         self.D[self.s] = resultado
     
     def instr_CMAG(self):
-        """Compara se s-1 >= s"""
+        # compara D[s-1] >= D[s]
         resultado = 1.0 if self.D[self.s-1] >= self.D[self.s] else 0.0
         self.s -= 1
         self.D[self.s] = resultado
     
     def instr_CMEG(self):
-        """Compara se s-1 <= s"""
+        # compara D[s-1] <= D[s]
         resultado = 1.0 if self.D[self.s-1] <= self.D[self.s] else 0.0
         self.s -= 1
         self.D[self.s] = resultado
     
     def instr_DSVF(self, rotulo):
-        """Desvia se topo da pilha for 0 (falso)"""
+        # desvia se topo == 0
         if self.D[self.s] == 0.0:
             self.i = self.rotulos[rotulo] - 1  # -1 porque vai incrementar depois
         self.s -= 1
     
     def instr_DSVI(self, rotulo):
-        """Desvia incondicionalmente"""
+        # desvia incondicionalmente
         self.i = self.rotulos[rotulo] - 1  # -1 porque vai incrementar depois
 
 
-# ============= PROGRAMA PRINCIPAL =============
+#  progrma  principalgit
 
 if __name__ == "__main__":
     import sys
@@ -266,9 +272,7 @@ if __name__ == "__main__":
         vm.executar()
         
     except FileNotFoundError:
-        print(f"ERRO: Arquivo '{arquivo}' nao encontrado!")
-        print("Execute primeiro o compilador: python main.py")
+        print(f"erro: arquivo '{arquivo}' não encontrado")
+        print("dica: rode o compilador antes: python main.py")
     except Exception as e:
-        print(f"ERRO durante execucao: {e}")
-        import traceback
-        traceback.print_exc()
+        print(f"erro durante a execução: {e}")
