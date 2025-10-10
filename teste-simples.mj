@@ -1,0 +1,16 @@
+public class TesteSimples {
+    public static void main(String[] args) {
+        double x, y, resultado;
+        
+        x = lerDouble();
+        y = lerDouble();
+        
+        if (x > y) {
+            resultado = x - y;
+        } else {
+            resultado = y - x;
+        }
+        
+        System.out.println(resultado);
+    }
+}

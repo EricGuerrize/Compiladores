@@ -1,7 +1,8 @@
 symbol_table = {}   
 next_address = 0       
-codigo_gerado = []  # Lista com as instruções do código objeto
+codigo_gerado = []
 rotulo_counter = 0
+
 def novo_rotulo():
     global rotulo_counter
     r = rotulo_counter
@@ -12,24 +13,40 @@ tokens = []
 pos = 0
 
 def init_parser(toks):
-    global tokens, pos
+    global tokens, pos, codigo_gerado
     tokens = toks
     pos = 0
+    codigo_gerado = []
+    
+    # inicia programa
+    codigo_gerado.append("INPP")
+    
     prog()
+    
+    # finaliza programa
+    codigo_gerado.append("PARA")
+    
     if pos < len(tokens):
         token = tokens[pos]
-        raise SyntaxError(f"Token inesperado após fim do programa: {token}")
-    print("Tabela de símbolos (variáveis declaradas):")
+        raise SyntaxError(f"Token inesperado apos fim do programa: {token}")
+    
+    print("\n" + "="*50)
+    print("Tabela de simbolos:")
     for var, addr in symbol_table.items():
-        print(f"  {var} -> endereço {addr}")
-    print("\u2713 Análise sintática finalizada com sucesso.")
-    print("Código objeto gerado:")
-    for instr in codigo_gerado:
-        print(instr)
+        print(f"  {var} -> endereco {addr}")
+    print("="*50)
+    print("Analise sintatica OK")
+    print("\n" + "="*50)
+    print("Codigo objeto:")
+    print("="*50)
+    for i, instr in enumerate(codigo_gerado):
+        print(f"{i:03d}: {instr}")
+    print("="*50)
+    
     with open("codigo-gerado.txt", "w") as f:
         for instr in codigo_gerado:
             f.write(instr + "\n")
-    print("Código objeto salvo em 'codigo-gerado.txt'")
+    print("\nCodigo salvo em 'codigo-gerado.txt'")
 
 def match(expected_type, expected_value=None):
     global pos
@@ -56,7 +73,7 @@ def lookahead_is(expected_type, expected_value=None):
         return False
     return True
 
-# GRAMÁTICA 
+# gramatica
 
 def prog():
     match('KW', 'public')
@@ -117,8 +134,10 @@ def vars_list():
     var_name = tokens[pos - 1][1]
 
     if var_name in symbol_table:
-        raise Exception(f"Variável '{var_name}' já declarada.")
+        raise Exception(f"Variável '{var_name}' ja declarada.")
 
+    # aloca espaco pra variavel
+    codigo_gerado.append("ALME 1")
     symbol_table[var_name] = next_address
     next_address += 1
 
@@ -144,106 +163,105 @@ def assignment_or_cmd():
         var_name = tokens[pos - 1][1]
 
         if var_name not in symbol_table:
-            raise Exception(f"Variável '{var_name}' usada sem declaração.")
+            raise Exception(f"Variavel '{var_name}' usada sem declaracao.")
 
         match('SYMBOL', '=')
         expr_result = expr()
-        codigo_gerado.extend(expr_result)  # expr_result contém instruções como LEIT ou CRVL
+        codigo_gerado.extend(expr_result)
         codigo_gerado.append(f"ARMZ {symbol_table[var_name]}")
 
 def expr():
-    codigo = termo()
-    codigo.extend(outros_termos())
-    return codigo
-   
-def outros_termos():
-    codigo = []
-    while lookahead_is('OP', '+') or lookahead_is('OP', '-'):
-        match('OP')
-        op = tokens[pos - 1][1]
-        codigo.extend(termo())
-
-
-        if op == '+':
-            codigo.append("SOMA")
-        else:
-            codigo.append("SUBT")
-    return codigo
-
-def termo():
-    #verificar se o operador é unário - 
-    tem_op_unario = False
-    if lookahead_is('OP', '-'):
-        match('OP', '-')
-        tem_op_unario = True
-    codigo = fator()
-
-    #se possuir operador unario, inveter o sinal.
-
-    if tem_op_unario:
-        codigo.append("INVR")
-
-    codigo.extend(mais_fatores())
-    return codigo
-
-def mais_fatores():
-    codigo = []
-    while lookahead_is('OP', '*') or lookahead_is('OP', '/'):
-        match('OP')
-        operador = tokens[pos - 1][1]
-        codigo_fator = fator()
-        codigo.extend(codigo_fator)
-        
-        if operador == '*':
-            codigo.append("MULT")
-        elif operador == '/':
-            codigo.append("DIVI")
-    
-    return codigo
-    
-def fator():
-    if lookahead_is('ID'):
-        match('ID')
-        var_name = tokens[pos - 1][1]
-        if var_name not in symbol_table:
-            raise Exception(f"Variável '{var_name}' usada sem declaração.")
-        return [f"CRVL {symbol_table[var_name]}"]
-    
-    elif lookahead_is('NUM'):
-        match('NUM')
-        valor = tokens[pos - 1][1]
-        return [f"CRCT {valor}"]
-    
-    elif lookahead_is('KW', 'lerDouble'):
+    # EXPRESSAO simplificada - apenas retorna código das subexpressões
+    if lookahead_is('KW', 'lerDouble'):
         match('KW', 'lerDouble')
         match('SYMBOL', '(')
         match('SYMBOL', ')')
         return ["LEIT"]
-    
+    elif lookahead_is('ID'):
+        match('ID')
+        var_name = tokens[pos - 1][1]
+        if var_name not in symbol_table:
+            raise Exception(f"Variável '{var_name}' usada sem declaração.")
+        codigo = [f"CRVL {symbol_table[var_name]}"]
+        
+        # Verifica operações aritméticas
+        while lookahead_is('OP') and tokens[pos][1] in ['+', '-', '*', '/']:
+            op = tokens[pos][1]
+            match('OP')
+            
+            # Próximo termo
+            if lookahead_is('KW', 'lerDouble'):
+                match('KW', 'lerDouble')
+                match('SYMBOL', '(')
+                match('SYMBOL', ')')
+                codigo.append("LEIT")
+            elif lookahead_is('ID'):
+                match('ID')
+                var_name2 = tokens[pos - 1][1]
+                if var_name2 not in symbol_table:
+                    raise Exception(f"Variável '{var_name2}' usada sem declaração.")
+                codigo.append(f"CRVL {symbol_table[var_name2]}")
+            elif lookahead_is('NUM'):
+                match('NUM')
+                valor = tokens[pos - 1][1]
+                codigo.append(f"CRCT {valor}")
+            
+            # Adiciona operação
+            if op == '+':
+                codigo.append("SOMA")
+            elif op == '-':
+                codigo.append("SUBT")
+            elif op == '*':
+                codigo.append("MULT")
+            elif op == '/':
+                codigo.append("DIVI")
+        
+        return codigo
+        
+    elif lookahead_is('NUM'):
+        match('NUM')
+        valor = tokens[pos - 1][1]
+        return [f"CRCT {valor}"]
     elif lookahead_is('SYMBOL', '('):
         match('SYMBOL', '(')
         resultado = expr()
         match('SYMBOL', ')')
         return resultado
-    
     else:
-        raise SyntaxError("Expressão inválida: esperado id, número, lerDouble() ou (expressão)")
-
+        raise SyntaxError("Expressão inválida")
 
 def cmd_if():
     match('KW', 'if')
     match('SYMBOL', '(')
+    
+    # processa condicao
     expr1 = expr()
     match('OP')
+    op = tokens[pos - 1][1]
     expr2 = expr()
     match('SYMBOL', ')')
 
     rot_else = novo_rotulo()
     rot_end = novo_rotulo()
 
+    # gera codigo pra condicao
     codigo_gerado.extend(expr1)
     codigo_gerado.extend(expr2)
-    codigo_gerado.append("CPMA")
+    
+    # escolhe instrucao de comparacao
+    if op == '>':
+        codigo_gerado.append("CPMA")
+    elif op == '<':
+        codigo_gerado.append("CPME")
+    elif op == '==':
+        codigo_gerado.append("CPIG")
+    elif op == '!=':
+        codigo_gerado.append("CDES")
+    elif op == '>=':
+        codigo_gerado.append("CMAG")
+    elif op == '<=':
+        codigo_gerado.append("CMEG")
+    
     codigo_gerado.append(f"DSVF R{rot_else}")
 
     match('SYMBOL', '{')
@@ -264,19 +282,41 @@ def cmd_if():
 def cmd_while():
     match('KW', 'while')
     match('SYMBOL', '(')
+    
     rot_inicio = novo_rotulo()
     rot_fim = novo_rotulo()
+    
     codigo_gerado.append(f"R{rot_inicio}:")
+    
+    # processa condicao
     expr1 = expr()
     match('OP')
+    op = tokens[pos - 1][1]
     expr2 = expr()
+    
     codigo_gerado.extend(expr1)
     codigo_gerado.extend(expr2)
-    codigo_gerado.append("CPMA")
+    
+    # escolhe instrucao de comparacao
+    if op == '>':
+        codigo_gerado.append("CPMA")
+    elif op == '<':
+        codigo_gerado.append("CPME")
+    elif op == '==':
+        codigo_gerado.append("CPIG")
+    elif op == '!=':
+        codigo_gerado.append("CDES")
+    elif op == '>=':
+        codigo_gerado.append("CMAG")
+    elif op == '<=':
+        codigo_gerado.append("CMEG")
+    
     codigo_gerado.append(f"DSVF R{rot_fim}")
+    
     match('SYMBOL', ')')
     match('SYMBOL', '{')
     cmds()
     match('SYMBOL', '}')
+    
     codigo_gerado.append(f"DSVI R{rot_inicio}")
     codigo_gerado.append(f"R{rot_fim}:")
