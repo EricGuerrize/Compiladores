@@ -6,7 +6,7 @@ KEYWORDS = {
     "double", "if", "else", "while", "System.out.println", "lerDouble"
 }
 
-# identificacao regex para cada tipo de token
+# regex pra cada tipo de token
 token_specs = [
     ('NUM',      r'\d+\.\d+'),                          # reais
     ('ID',       r'[a-zA-Z_][a-zA-Z_0-9]*'),            # identificadores
@@ -14,7 +14,7 @@ token_specs = [
     ('SYMBOL',   r'[(){}\[\];,=\.]'),                     # símbolos + ponto (sem ponto deu erro)
     ('NEWLINE',  r'\n'),                                # quebra de linha
     ('SKIP',     r'[ \t]+'),                            # espaços e tabs
-    ('MISMATCH', r'.'),                                 # qualquer outro caractere nao add
+    ('MISMATCH', r'.'),                                 # qualquer outro caractere
 ]
 
 tok_regex = '|'.join(f'(?P<{name}>{pattern})' for name, pattern in token_specs)
@@ -28,7 +28,7 @@ def lexer(code):
     while pos < len(code):
         match = get_token(code, pos)
         if not match:
-            raise SyntaxError(f"Erro léxico na linha {line}")
+            raise SyntaxError(f"erro lexico linha {line}")
         
         typ = match.lastgroup
         val = match.group(typ)
@@ -49,7 +49,7 @@ def lexer(code):
         elif typ == 'SKIP':
             pass
         elif typ == 'MISMATCH':
-            raise SyntaxError(f"Caractere inválido '{val}' na linha {line}")
+            raise SyntaxError(f"caractere invalido '{val}' linha {line}")
         
         pos = match.end()
     

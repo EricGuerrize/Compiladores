@@ -5,9 +5,9 @@ with open("exemplo.mj", "r") as f:
     codigo = f.read()
 
 tokens = lexer(codigo)
-print("Tokens gerados:")
+print("Tokens:")
 for t in tokens:
     print(t)
 
-print("\nAnálise sintática iniciada : ")
+print("\nAnalise sintatica:")
 init_parser(tokens)

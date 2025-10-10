@@ -23,12 +23,12 @@ def init_parser(toks):
     
     prog()
     
-    # finaliza programa
+    # finaliza
     codigo_gerado.append("PARA")
     
     if pos < len(tokens):
         token = tokens[pos]
-        raise SyntaxError(f"Token inesperado apos fim do programa: {token}")
+        raise SyntaxError(f"token inesperado: {token}")
     
     print("\n" + "-"*10)
     print("Tabela de simbolos:")
@@ -51,15 +51,15 @@ def init_parser(toks):
 def match(expected_type, expected_value=None):
     global pos
     if pos >= len(tokens):
-        raise SyntaxError("Fim inesperado do código.")
+        raise SyntaxError("fim inesperado")
 
     token_type, token_value = tokens[pos]
 
     if token_type != expected_type:
-        raise SyntaxError(f"Esperado tipo {expected_type}, mas encontrou {token_type} '{token_value}'")
+        raise SyntaxError(f"esperava {expected_type}, achou {token_type}")
 
     if expected_value and token_value != expected_value:
-        raise SyntaxError(f"Esperado '{expected_value}', mas encontrou '{token_value}'")
+        raise SyntaxError(f"esperava '{expected_value}'")
 
     pos += 1
 
@@ -134,9 +134,9 @@ def vars_list():
     var_name = tokens[pos - 1][1]
 
     if var_name in symbol_table:
-        raise Exception(f"Variável '{var_name}' ja declarada.")
+        raise Exception(f"variavel '{var_name}' ja declarada")
 
-    # aloca espaco pra variavel
+    # aloca espaco pra var
     codigo_gerado.append("ALME 1")
     symbol_table[var_name] = next_address
     next_address += 1
@@ -147,7 +147,7 @@ def vars_list():
 
 def assignment_or_cmd():
     if lookahead_is('ID') and tokens[pos][1] == 'System':
-        # System.out.println(...)
+        # System.out.println
         match('ID', 'System')
         match('SYMBOL', '.')
         match('ID', 'out')
@@ -163,7 +163,7 @@ def assignment_or_cmd():
         var_name = tokens[pos - 1][1]
 
         if var_name not in symbol_table:
-            raise Exception(f"Variavel '{var_name}' usada sem declaracao.")
+            raise Exception(f"variavel '{var_name}' nao declarada")
 
         match('SYMBOL', '=')
         expr_result = expr()
@@ -171,7 +171,7 @@ def assignment_or_cmd():
         codigo_gerado.append(f"ARMZ {symbol_table[var_name]}")
 
 def expr():
-    # EXPRESSAO simplificada - apenas retorna código das subexpressões
+    # expressao simplificada
     if lookahead_is('KW', 'lerDouble'):
         match('KW', 'lerDouble')
         match('SYMBOL', '(')
@@ -181,15 +181,15 @@ def expr():
         match('ID')
         var_name = tokens[pos - 1][1]
         if var_name not in symbol_table:
-            raise Exception(f"Variável '{var_name}' usada sem declaração.")
+            raise Exception(f"variavel '{var_name}' nao declarada")
         codigo = [f"CRVL {symbol_table[var_name]}"]
         
-        # Verifica operações aritméticas
+        # operacoes aritmeticas
         while lookahead_is('OP') and tokens[pos][1] in ['+', '-', '*', '/']:
             op = tokens[pos][1]
             match('OP')
             
-            # Próximo termo
+            # proximo termo
             if lookahead_is('KW', 'lerDouble'):
                 match('KW', 'lerDouble')
                 match('SYMBOL', '(')
@@ -199,14 +199,14 @@ def expr():
                 match('ID')
                 var_name2 = tokens[pos - 1][1]
                 if var_name2 not in symbol_table:
-                    raise Exception(f"Variável '{var_name2}' usada sem declaração.")
+                    raise Exception(f"variavel '{var_name2}' nao declarada")
                 codigo.append(f"CRVL {symbol_table[var_name2]}")
             elif lookahead_is('NUM'):
                 match('NUM')
                 valor = tokens[pos - 1][1]
                 codigo.append(f"CRCT {valor}")
             
-            # Adiciona operação
+            # adiciona a operacao
             if op == '+':
                 codigo.append("SOMA")
             elif op == '-':
@@ -228,7 +228,7 @@ def expr():
         match('SYMBOL', ')')
         return resultado
     else:
-        raise SyntaxError("Expressão inválida")
+        raise SyntaxError("expressao invalida")
 
 def cmd_if():
     match('KW', 'if')
@@ -244,11 +244,11 @@ def cmd_if():
     rot_else = novo_rotulo()
     rot_end = novo_rotulo()
 
-    # gera codigo pra condicao
+    # gera codigo da condicao
     codigo_gerado.extend(expr1)
     codigo_gerado.extend(expr2)
     
-    # escolhe instrucao de comparacao
+    # instrucao de comparacao
     if op == '>':
         codigo_gerado.append("CPMA")
     elif op == '<':
@@ -288,7 +288,7 @@ def cmd_while():
     
     codigo_gerado.append(f"R{rot_inicio}:")
     
-    # processa condicao
+    # condicao
     expr1 = expr()
     match('OP')
     op = tokens[pos - 1][1]
@@ -297,7 +297,7 @@ def cmd_while():
     codigo_gerado.extend(expr1)
     codigo_gerado.extend(expr2)
     
-    # escolhe instrucao de comparacao
+    # comparacao
     if op == '>':
         codigo_gerado.append("CPMA")
     elif op == '<':

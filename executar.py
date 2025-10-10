@@ -1,5 +1,4 @@
-#script pra executar compilador e vm em sequencia
-
+# script pra rodar compilador e vm em sequencia
 
 import sys
 import os
@@ -19,7 +18,7 @@ def executar_completo(arquivo_fonte):
         from lexico import lexer
         from parser import init_parser
         
-        # le o arquivo fonte
+        # le arquivo
         if not os.path.exists(arquivo_fonte):
             print(f"ERRO: arquivo '{arquivo_fonte}' nao encontrado")
             return False
@@ -28,14 +27,14 @@ def executar_completo(arquivo_fonte):
             codigo = f.read()
         
         print(f"Arquivo: {arquivo_fonte}")
-        print(f"Tamanho: {len(codigo)} caracteres\n")
+        print(f"Tamanho: {len(codigo)} chars\n")
         
         # analise lexica
         print("Analise lexica")
         tokens = lexer(codigo)
         print(f"{len(tokens)} tokens\n")
         
-        # analise sintatica, semantica e geracao de codigo
+        # sintaxe, semantica e geracao
         print("Analise sintatica e semantica")
         init_parser(tokens)
         
@@ -58,7 +57,7 @@ def executar_completo(arquivo_fonte):
     try:
         from vm import MaquinaVirtual
         
-        # cria e executa a vm
+        # cria vm e executa
         vm = MaquinaVirtual()
         vm.carregar_codigo("codigo-gerado.txt")
         vm.executar()
@@ -66,7 +65,7 @@ def executar_completo(arquivo_fonte):
         print("\nExecucao OK")
         
     except FileNotFoundError:
-        print("ERRO: arquivo 'codigo-gerado.txt' nao encontrado")
+        print("ERRO: 'codigo-gerado.txt' nao encontrado")
         print("algo deu errado na compilacao")
         return False
     except Exception as e:
@@ -82,13 +81,12 @@ def executar_completo(arquivo_fonte):
 
 
 def main():
-    # determina qual arquivo usar
+    # qual arquivo usar
     if len(sys.argv) > 1:
         arquivo = sys.argv[1]
     else:
         arquivo = "exemplo.mj"
     
-    # executa o processo completo
     sucesso = executar_completo(arquivo)
     
     sys.exit(0 if sucesso else 1)
