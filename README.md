@@ -27,4 +27,3 @@ parser.oy : analisar sintatico
 vm.py : maquina virtual(interpretador)
 executar.py : scprit para executar ambas partes
 exemplo.mj: exemplo de codigo mini java
-mini-java-gramatica-v2.txt: gramatica de lingaugem
